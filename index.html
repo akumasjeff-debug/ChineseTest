@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<title>國語小練習</title>
+<style>
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { margin: 0; padding: 0; background: #eef6ff; font-family: -apple-system, "PingFang TC", "Microsoft JhengHei", sans-serif; }
+  #app { max-width: 480px; margin: 0 auto; min-height: 100vh; display: flex; flex-direction: column; padding: 20px 16px; }
+  h1 { text-align: center; color: #2a6fb0; font-size: 26px; margin: 10px 0 4px; }
+  .sub { text-align: center; color: #888; font-size: 15px; margin-bottom: 20px; }
+  .card { background: #fff; border-radius: 16px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); margin-bottom: 16px; }
+  .btn { display: block; width: 100%; padding: 16px; margin: 10px 0; border: 3px solid #2a6fb0; border-radius: 14px; background: #fff; color: #2a6fb0; font-size: 20px; font-weight: bold; text-align: center; cursor: pointer; }
+  .btn:active { background: #e3f0ff; }
+  .btn.primary { background: #2a6fb0; color: #fff; }
+  .progress { text-align: center; color: #666; font-size: 15px; margin-bottom: 6px; }
+  .score { text-align: center; color: #2a6fb0; font-weight: bold; font-size: 16px; margin-bottom: 14px; }
+  .question { font-size: 24px; text-align: center; color: #333; margin: 16px 0; line-height: 1.6; }
+  .chips { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin: 14px 0; min-height: 56px; }
+  .chip { padding: 12px 18px; border-radius: 12px; border: 3px solid #b6d4f0; background: #f4f9ff; color: #2a6fb0; font-size: 20px; font-weight: bold; cursor: pointer; }
+  .chip.used { opacity: 0.25; pointer-events: none; }
+  .slots { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin: 14px 0; min-height: 56px; border-top: 2px dashed #ccc; padding-top: 14px; }
+  .slot { padding: 12px 18px; border-radius: 12px; border: 3px solid #2a6fb0; background: #fff; color: #2a6fb0; font-size: 20px; font-weight: bold; min-width: 48px; min-height: 28px; text-align: center; cursor: pointer; }
+  .slot.empty { border-style: dashed; border-color: #ccc; }
+  .choice { padding: 16px; margin: 8px 0; border-radius: 12px; border: 3px solid #b6d4f0; background: #f4f9ff; color: #2a6fb0; font-size: 22px; font-weight: bold; text-align: center; cursor: pointer; }
+  .choice.correct { background: #d8f5d8; border-color: #4caf50; color: #2e7d32; }
+  .choice.wrong { background: #fde0e0; border-color: #e74c3c; color: #c0392b; }
+  .feedback { text-align: center; font-size: 22px; font-weight: bold; margin: 14px 0; min-height: 30px; }
+  .feedback.ok { color: #2e7d32; }
+  .feedback.bad { color: #c0392b; }
+  .hidden { display: none; }
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script src="app.js"></script>
+</body>
+</html>
