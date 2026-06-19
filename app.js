@@ -10,16 +10,6 @@ const WORDS = [
   '不太', '清楚', '停下來', '誰快', '誰慢', '分不出', '休息', '一會兒', '路燈', '吧', '加油',
 ];
 
-// 這份清單其實是5篇不同短文片段接在一起，排序題只能在同一段落內出題，不能跨段
-// [起點, 終點]（皆為 WORDS 的索引，閉區間）
-const SEGMENTS = [
-  [0, 22],   // 夢見自己變成黑天鵝、棉花糖、小珍珠、紅金魚...
-  [23, 36],  // 國王大掃除：洗淨馬路、刷亮樹葉、彩虹送人
-  [37, 47],  // 躺草地放風箏
-  [48, 62],  // 收到生日卡片
-  [63, 80],  // 跟路燈賽跑
-];
-
 // 高信心量詞配對（從題目原文可推得）
 const CLASSIFIERS = [
   { word: '雨鞋', answer: '雙' },
@@ -29,6 +19,29 @@ const CLASSIFIERS = [
 ];
 const CLASSIFIER_OPTIONS = ['雙', '顆', '張', '隻'];
 
+// 單字注音對照表（涵蓋題庫內所有出現過的字）
+const ZHUYIN = {
+  作: 'ㄗㄨㄛˋ', 夢: 'ㄇㄥˋ', 黑: 'ㄏㄟ', 雲: 'ㄩㄣˊ', 躺: 'ㄊㄤˇ', 在: 'ㄗㄞˋ', 自: 'ㄗˋ', 己: 'ㄐㄧˇ',
+  變: 'ㄅㄧㄢˋ', 成: 'ㄔㄥˊ', 天: 'ㄊㄧㄢ', 鵝: 'ㄜˊ', 棉: 'ㄇㄧㄢˊ', 花: 'ㄏㄨㄚ', 糖: 'ㄊㄤˊ',
+  得: 'ㄉㄜˊ', 更: 'ㄍㄥˋ', 漂: 'ㄆㄧㄠˋ', 亮: 'ㄌㄧㄤˋ', 妹: 'ㄇㄟˋ', 的: '˙ㄉㄜ', 紅: 'ㄏㄨㄥˊ',
+  雨: 'ㄩˇ', 鞋: 'ㄒㄧㄝˊ', 一: 'ㄧ', 雙: 'ㄕㄨㄤ', 穿: 'ㄔㄨㄢ', 上: 'ㄕㄤˋ', 滴: 'ㄉㄧ', 玩: 'ㄨㄢˊ',
+  遊: 'ㄧㄡˊ', 戲: 'ㄒㄧˋ', 顆: 'ㄎㄜ', 小: 'ㄒㄧㄠˇ', 珍: 'ㄓㄣ', 珠: 'ㄓㄨ', 落: 'ㄌㄨㄛˋ', 下: 'ㄒㄧㄚˋ',
+  水: 'ㄕㄨㄟˇ', 面: 'ㄇㄧㄢˋ', 大: 'ㄉㄚˋ', 魚: 'ㄩˊ', 缸: 'ㄍㄤ', 金: 'ㄐㄧㄣ', 游: 'ㄧㄡˊ', 過: 'ㄍㄨㄛˋ',
+  去: 'ㄑㄩˋ', 來: 'ㄌㄞˊ', 太: 'ㄊㄞˋ', 陽: 'ㄧㄤˊ', 國: 'ㄍㄨㄛˊ', 王: 'ㄨㄤˊ', 要: 'ㄧㄠˋ', 掃: 'ㄙㄠˇ',
+  除: 'ㄔㄨˊ', 洗: 'ㄒㄧˇ', 淨: 'ㄐㄧㄥˋ', 高: 'ㄍㄠ', 低: 'ㄉㄧ', 馬: 'ㄇㄚˇ', 路: 'ㄌㄨˋ', 很: 'ㄏㄣˇ',
+  認: 'ㄖㄣˋ', 真: 'ㄓㄣ', 樹: 'ㄕㄨˋ', 葉: 'ㄧㄝˋ', 子: 'ㄗˇ', 刷: 'ㄕㄨㄚ', 七: 'ㄑㄧ', 彩: 'ㄘㄞˇ',
+  虹: 'ㄏㄨㄥˊ', 送: 'ㄙㄨㄥˋ', 給: 'ㄍㄟˇ', 他: 'ㄊㄚ', 們: '˙ㄇㄣ', 跑: 'ㄆㄠˇ', 跳: 'ㄊㄧㄠˋ',
+  說: 'ㄕㄨㄛ', 笑: 'ㄒㄧㄠˋ', 每: 'ㄇㄟˇ', 件: 'ㄐㄧㄢˋ', 事: 'ㄕˋ', 情: 'ㄑㄧㄥˊ', 草: 'ㄘㄠˇ', 地: 'ㄉㄧˋ',
+  化: 'ㄏㄨㄚˋ', 好: 'ㄏㄠˇ', 有: 'ㄧㄡˇ', 趣: 'ㄑㄩˋ', 拉: 'ㄌㄚ', 著: '˙ㄓㄜ', 長: 'ㄔㄤˊ', 線: 'ㄒㄧㄢˋ',
+  放: 'ㄈㄤˋ', 風: 'ㄈㄥ', 箏: 'ㄓㄥ', 升: 'ㄕㄥ', 神: 'ㄕㄣˊ', 奇: 'ㄑㄧˊ', 課: 'ㄎㄜˋ', 時: 'ㄕˊ',
+  知: 'ㄓ', 道: 'ㄉㄠˋ', 嗎: '˙ㄇㄚ', 記: 'ㄐㄧˋ', 今: 'ㄐㄧㄣ', 是: 'ㄕˋ', 生: 'ㄕㄥ', 日: 'ㄖˋ',
+  快: 'ㄎㄨㄞˋ', 樂: 'ㄌㄜˋ', 謝: 'ㄒㄧㄝˋ', 第: 'ㄉㄧˋ', 次: 'ㄘˋ', 這: 'ㄓㄜˋ', 學: 'ㄒㄩㄝˊ', 我: 'ㄨㄛˇ',
+  收: 'ㄕㄡ', 到: 'ㄉㄠˋ', 張: 'ㄓㄤ', 卡: 'ㄎㄚˇ', 片: 'ㄆㄧㄢˋ', 祝: 'ㄓㄨˋ', 福: 'ㄈㄨˊ', 燈: 'ㄉㄥ',
+  前: 'ㄑㄧㄢˊ', 點: 'ㄉㄧㄢˇ', 半: 'ㄅㄢˋ', 不: 'ㄅㄨˋ', 清: 'ㄑㄧㄥ', 楚: 'ㄔㄨˇ', 停: 'ㄊㄧㄥˊ', 誰: 'ㄕㄟˊ',
+  慢: 'ㄇㄢˋ', 分: 'ㄈㄣ', 出: 'ㄔㄨ', 休: 'ㄒㄧㄡ', 息: 'ㄒㄧˊ', 會: 'ㄏㄨㄟˋ', 兒: 'ㄦˊ', 吧: '˙ㄅㄚ',
+  加: 'ㄐㄧㄚ', 油: 'ㄧㄡˊ',
+};
+
 function hasRepeatChar(word) {
   for (let i = 0; i < word.length - 1; i++) {
     if (word[i] === word[i + 1]) return true;
@@ -36,7 +49,7 @@ function hasRepeatChar(word) {
   return false;
 }
 const REDUP_WORDS = WORDS.filter(hasRepeatChar);
-const PLAIN_WORDS = WORDS.filter(w => !hasRepeatChar(w));
+const ALL_CHARS = Object.keys(ZHUYIN);
 
 const TOTAL_QUESTIONS = 10;
 let state = { index: 0, score: 0, questions: [] };
@@ -53,27 +66,48 @@ function pickRandom(arr, n) {
   return shuffle(arr).slice(0, n);
 }
 
-function genOrderQuestion() {
-  const [segStart, segEnd] = SEGMENTS[Math.floor(Math.random() * SEGMENTS.length)];
-  const segLen = segEnd - segStart + 1;
-  const len = Math.min(Math.floor(Math.random() * 2) + 4, segLen); // 4-5 個詞，不超過該段長度
-  const start = segStart + Math.floor(Math.random() * (segLen - len + 1));
-  const correct = WORDS.slice(start, start + len);
-  return { type: 'order', correct, shuffled: shuffle(correct) };
+function genZhuyinQuestion() {
+  const word = WORDS[Math.floor(Math.random() * WORDS.length)];
+  const char = word[Math.floor(Math.random() * word.length)];
+  const answer = ZHUYIN[char];
+  const distractorChars = pickRandom(ALL_CHARS.filter(c => ZHUYIN[c] !== answer), 3);
+  const options = shuffle([answer, ...distractorChars.map(c => ZHUYIN[c])]);
+  return { type: 'zhuyin', word, char, answer, options, key: `zhuyin:${char}` };
 }
 function genClassifierQuestion() {
   const item = CLASSIFIERS[Math.floor(Math.random() * CLASSIFIERS.length)];
-  return { type: 'classifier', word: item.word, answer: item.answer, options: shuffle(CLASSIFIER_OPTIONS) };
+  return { type: 'classifier', word: item.word, answer: item.answer, options: shuffle(CLASSIFIER_OPTIONS), key: `classifier:${item.word}` };
 }
 function genRedupQuestion() {
   const correct = REDUP_WORDS[Math.floor(Math.random() * REDUP_WORDS.length)];
-  const distractors = pickRandom(PLAIN_WORDS.filter(w => w !== correct), 3);
-  return { type: 'redup', answer: correct, options: shuffle([correct, ...distractors]) };
+  const distractors = pickRandom(WORDS.filter(w => !hasRepeatChar(w) && w !== correct), 3);
+  return { type: 'redup', answer: correct, options: shuffle([correct, ...distractors]), key: `redup:${correct}` };
 }
 
 function genQuestion() {
-  const types = [genOrderQuestion, genClassifierQuestion, genRedupQuestion];
+  const types = [genZhuyinQuestion, genClassifierQuestion, genRedupQuestion];
   return types[Math.floor(Math.random() * types.length)]();
+}
+
+function genQuestionSet() {
+  const set = [];
+  const seenKeys = [];
+  let guard = 0;
+  while (set.length < TOTAL_QUESTIONS && guard < TOTAL_QUESTIONS * 30) {
+    guard++;
+    const q = genQuestion();
+    if (seenKeys.includes(q.key)) continue; // 避免同一題（同一個字/詞）重複出現
+    seenKeys.push(q.key);
+    set.push(q);
+  }
+  return set;
+}
+
+function withRuby(text) {
+  return Array.from(text).map(ch => {
+    const zy = ZHUYIN[ch];
+    return zy ? `<ruby>${ch}<rt style="font-size:11px;color:#888;">${zy}</rt></ruby>` : ch;
+  }).join('');
 }
 
 const app = document.getElementById('app');
@@ -92,25 +126,22 @@ function renderStart() {
 }
 
 function renderAdmin() {
-  const segmentsHtml = SEGMENTS.map((seg, i) => {
-    const text = WORDS.slice(seg[0], seg[1] + 1).join('、');
-    return `<div style="margin-bottom:10px;"><b>段落 ${i + 1}：</b>${text}</div>`;
-  }).join('');
-  const classifierHtml = CLASSIFIERS.map(c => `<div>一（${c.answer}）${c.word}</div>`).join('');
-  const redupHtml = `<div>${REDUP_WORDS.join('、')}</div>`;
+  const wordsHtml = `<div style="line-height:2.2;">${WORDS.map(withRuby).join('、')}</div>`;
+  const classifierHtml = CLASSIFIERS.map(c => `<div>一（${c.answer}）${withRuby(c.word)}</div>`).join('');
+  const redupHtml = `<div style="line-height:2.2;">${REDUP_WORDS.map(withRuby).join('、')}</div>`;
   app.innerHTML = `
     <h1>🔧 題庫總覽</h1>
     <div class="card">
-      <div class="question" style="font-size:18px; text-align:left;">📑 排序題段落（每題從同一段落內抽4-5個詞）</div>
-      <div style="font-size:16px; line-height:1.8; color:#444;">${segmentsHtml}</div>
+      <div class="question" style="font-size:18px; text-align:left;">📖 全部詞語（含注音）</div>
+      <div style="font-size:20px; color:#444;">${wordsHtml}</div>
     </div>
     <div class="card">
       <div class="question" style="font-size:18px; text-align:left;">📏 量詞配對題</div>
-      <div style="font-size:16px; line-height:1.8; color:#444;">${classifierHtml}</div>
+      <div style="font-size:20px; color:#444;">${classifierHtml}</div>
     </div>
     <div class="card">
       <div class="question" style="font-size:18px; text-align:left;">🔁 疊字詞題（正確答案候選）</div>
-      <div style="font-size:16px; line-height:1.8; color:#444;">${redupHtml}</div>
+      <div style="font-size:20px; color:#444;">${redupHtml}</div>
     </div>
     <div class="btn primary" id="backBtn">⬅️ 返回</div>
   `;
@@ -118,67 +149,38 @@ function renderAdmin() {
 }
 
 function startQuiz() {
-  state = { index: 0, score: 0, questions: Array.from({ length: TOTAL_QUESTIONS }, genQuestion) };
+  state = { index: 0, score: 0, questions: genQuestionSet() };
   renderQuestion();
 }
 
 function renderQuestion() {
   const q = state.questions[state.index];
   const header = `
-    <div class="progress">第 ${state.index + 1} 題 / 共 ${TOTAL_QUESTIONS} 題</div>
+    <div class="progress">第 ${state.index + 1} 題 / 共 ${state.questions.length} 題</div>
     <div class="score">目前分數：${state.score}</div>
   `;
-  if (q.type === 'order') renderOrderQuestion(header, q);
+  if (q.type === 'zhuyin') renderZhuyinQuestion(header, q);
   else if (q.type === 'classifier') renderClassifierQuestion(header, q);
   else renderRedupQuestion(header, q);
 }
 
-function renderOrderQuestion(header, q) {
+function renderZhuyinQuestion(header, q) {
   app.innerHTML = `
     ${header}
     <div class="card">
-      <div class="question">依照正確順序，把詞語排好！</div>
-      <div class="slots" id="slots"></div>
-      <div class="chips" id="chips"></div>
+      <div class="question">「${withRuby(q.word)}」這個詞裡<br>「<span style="color:#2a6fb0; font-size:32px;">${q.char}</span>」的正確注音是？</div>
+      <div id="choices"></div>
       <div class="feedback" id="fb"></div>
     </div>
   `;
-  const slotsEl = document.getElementById('slots');
-  const chipsEl = document.getElementById('chips');
-  const answer = [];
-  const slotEls = q.correct.map(() => {
-    const s = document.createElement('div');
-    s.className = 'slot empty';
-    slotsEl.appendChild(s);
-    return s;
-  });
-
-  let locked = false;
-  q.shuffled.forEach((word, i) => {
-    const chip = document.createElement('div');
-    chip.className = 'chip';
-    chip.textContent = word;
-    chip.onclick = () => {
-      if (locked || chip.classList.contains('used') || answer.length >= q.correct.length) return;
-      chip.classList.add('used');
-      answer.push(word);
-      slotEls[answer.length - 1].textContent = word;
-      slotEls[answer.length - 1].className = 'slot';
-      if (answer.length === q.correct.length) {
-        locked = true;
-        const ok = answer.every((w, idx) => w === q.correct[idx]);
-        showFeedback(ok, q.correct.join('、'));
-      }
-    };
-    chipsEl.appendChild(chip);
-  });
+  renderChoices(q.options, q.answer);
 }
 
 function renderClassifierQuestion(header, q) {
   app.innerHTML = `
     ${header}
     <div class="card">
-      <div class="question">一（　）${q.word}<br>該填哪個量詞？</div>
+      <div class="question">一（　）${withRuby(q.word)}<br>該填哪個量詞？</div>
       <div id="choices"></div>
       <div class="feedback" id="fb"></div>
     </div>
@@ -195,7 +197,7 @@ function renderRedupQuestion(header, q) {
       <div class="feedback" id="fb"></div>
     </div>
   `;
-  renderChoices(q.options, q.answer);
+  renderChoices(q.options.map(withRuby), withRuby(q.answer));
 }
 
 function renderChoices(options, answer) {
@@ -204,14 +206,14 @@ function renderChoices(options, answer) {
   options.forEach(opt => {
     const el = document.createElement('div');
     el.className = 'choice';
-    el.textContent = opt;
+    el.innerHTML = opt;
     el.onclick = () => {
       if (locked) return;
       locked = true;
       const ok = opt === answer;
       el.classList.add(ok ? 'correct' : 'wrong');
       if (!ok) {
-        [...box.children].forEach(c => { if (c.textContent === answer) c.classList.add('correct'); });
+        [...box.children].forEach(c => { if (c.innerHTML === answer) c.classList.add('correct'); });
       }
       showFeedback(ok, answer);
     };
@@ -219,30 +221,30 @@ function renderChoices(options, answer) {
   });
 }
 
-function showFeedback(ok, correctText) {
+function showFeedback(ok, correctHtml) {
   if (ok) state.score++;
   const fb = document.getElementById('fb');
   fb.className = 'feedback ' + (ok ? 'ok' : 'bad');
-  fb.textContent = ok ? '✅ 答對了！' : `❌ 正確答案：${correctText}`;
+  fb.innerHTML = ok ? '✅ 答對了！' : `❌ 正確答案：${correctHtml}`;
   const card = document.querySelector('.card');
   const nextBtn = document.createElement('div');
   nextBtn.className = 'btn primary';
-  nextBtn.textContent = state.index + 1 < TOTAL_QUESTIONS ? '下一題 ➡️' : '看結果 🎉';
+  nextBtn.textContent = state.index + 1 < state.questions.length ? '下一題 ➡️' : '看結果 🎉';
   nextBtn.onclick = () => {
     state.index++;
-    if (state.index < TOTAL_QUESTIONS) renderQuestion();
+    if (state.index < state.questions.length) renderQuestion();
     else renderResult();
   };
   card.appendChild(nextBtn);
 }
 
 function renderResult() {
-  const pct = state.score / TOTAL_QUESTIONS;
+  const pct = state.score / state.questions.length;
   const msg = pct >= 0.8 ? '太厲害了！🌟' : pct >= 0.5 ? '不錯喔，繼續加油！💪' : '再練習一次就會更好！😊';
   app.innerHTML = `
     <h1>📚 國語小練習</h1>
     <div class="card">
-      <div class="question">完成了！<br>得分：${state.score} / ${TOTAL_QUESTIONS}</div>
+      <div class="question">完成了！<br>得分：${state.score} / ${state.questions.length}</div>
       <div class="sub">${msg}</div>
       <div class="btn primary" id="againBtn">再玩一次 🔁</div>
     </div>
