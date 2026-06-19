@@ -759,4 +759,23 @@ function renderAdmin() {
   document.getElementById('backBtn').onclick = renderStart;
 }
 
+// ── 整合 data.js 的課本資料 ──────────────────────────────────
+(function mergeData() {
+  if (typeof ZHUYIN_EXT !== 'undefined') Object.assign(ZHUYIN, ZHUYIN_EXT);
+  if (typeof TEXTBOOK_FILL_Q !== 'undefined') FILL_BLANK_Q.push(...TEXTBOOK_FILL_Q);
+  if (typeof TEXTBOOK_CHAR_Q !== 'undefined') CHAR_FILL_Q.push(...TEXTBOOK_CHAR_Q);
+  if (typeof TEXTBOOK_TF_Q !== 'undefined') TRUE_FALSE_Q.push(...TEXTBOOK_TF_Q);
+  if (typeof BUSHOU_DB !== 'undefined') {
+    const byRad = {};
+    Object.entries(BUSHOU_DB).forEach(([ch, b]) => {
+      (byRad[b] = byRad[b] || []).push(ch);
+    });
+    Object.entries(byRad).forEach(([rad, chars]) => {
+      if (chars.length >= 4 && !RADICAL_GROUPS.find(g => g.radical === rad)) {
+        RADICAL_GROUPS.push({ radical: rad, label: rad, chars });
+      }
+    });
+  }
+})();
+
 renderStart();

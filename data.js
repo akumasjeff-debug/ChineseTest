@@ -168,3 +168,98 @@ Object.entries(CHAR_DB).forEach(([ch, d]) => {
   BUSHOU_DB[ch]  = d.b;
   if (GRADE_CHARS[d.g]) GRADE_CHARS[d.g].push(ch);
 });
+
+// ── 課本原文填空題（第 8-12 課，南一版一年級）────────────────
+
+const TEXTBOOK_FILL_Q = [
+  // 第8課：妹妹的紅雨鞋
+  { sent:'妹妹有一（　）新的紅雨鞋。', answer:'雙', options:['雙','隻','條','個'] },
+  { sent:'下雨天，妹妹喜歡（　）上紅雨鞋。', answer:'穿', options:['穿','套','踩','拿'] },
+  { sent:'妹妹開心的走到院子裡，和雨（　）玩遊戲。', answer:'滴', options:['滴','水','珠','點'] },
+  { sent:'小雨滴就像一（　）顆小珍珠。', answer:'顆', options:['顆','粒','個','片'] },
+  { sent:'小雨滴一（　）下，水面就開了。', answer:'落', options:['落','掉','飛','滴'] },
+  { sent:'水（　）就開出一朵朵的小小水花。', answer:'面', options:['面','上','中','板'] },
+  { sent:'雨天的院子，像一個大魚（　）。', answer:'缸', options:['缸','桶','盆','碗'] },
+  { sent:'紅雨鞋，就像兩隻小小的紅金（　）。', answer:'魚', options:['魚','鳥','蝦','蟹'] },
+  { sent:'紅金魚在大魚缸裡（　）過去。', answer:'游', options:['游','跑','跳','飛'] },
+  // 第9課：太陽國王大掃除
+  { sent:'太陽（　）王要大掃除了。', answer:'國', options:['國','公','天','土'] },
+  { sent:'大（　）很認真地刷亮葉子。', answer:'樹', options:['樹','石','草','花'] },
+  { sent:'七彩的（　）送給他們。', answer:'虹', options:['虹','風','雨','雲'] },
+  { sent:'七（　）的虹好漂亮！', answer:'彩', options:['彩','色','光','花'] },
+  { sent:'大樹很認（　）地刷亮葉子。', answer:'真', options:['真','心','努','用'] },
+  { sent:'七彩的虹（　）給他們。', answer:'送', options:['送','給','帶','拿'] },
+  // 第10課：放風箏
+  { sent:'她拉著長長的（　），把風箏放上了天。', answer:'線', options:['線','繩','帶','絲'] },
+  { sent:'她拉著長（　）的線放風箏。', answer:'長', options:['長','短','細','粗'] },
+  { sent:'風（　）升得好高，好神奇！', answer:'箏', options:['箏','筆','竿','球'] },
+  { sent:'風箏（　）得好高，好神奇！', answer:'升', options:['升','飛','跳','落'] },
+  // 第11課：生日快樂
+  { sent:'今天是我的生（　），朋友會不會記得呢？', answer:'日', options:['日','月','年','時'] },
+  { sent:'你知（　），今天是我的生日。', answer:'道', options:['道','得','底','到'] },
+  { sent:'（　）你生日快樂！', answer:'祝', options:['祝','給','送','告'] },
+  { sent:'今天是我的（　）日，大家祝我生日快樂。', answer:'生', options:['生','身','升','聲'] },
+  // 第12課：小黑
+  { sent:'我喜歡和小黑（　），我做什麼，小黑也跟著做。', answer:'玩', options:['玩','說','跑','唱'] },
+  { sent:'我們從公園跑到路（　）起跑。', answer:'燈', options:['燈','口','標','牌'] },
+  { sent:'我不太清（　），誰跑得比較快。', answer:'楚', options:['楚','清','明','白'] },
+  { sent:'我們分不出（　）快誰慢。', answer:'誰', options:['誰','哪','什','誰'] },
+  { sent:'路燈說：「休息一（　）兒吧！」', answer:'會', options:['會','下','個','次'] },
+  { sent:'我幫小黑（　）油，他好像向我笑了。', answer:'加', options:['加','打','給','送'] },
+  { sent:'休（　）了一會兒，我們又開始跑。', answer:'息', options:['息','閒','歇','停'] },
+];
+
+// ── 課本原文看注音選字題 ─────────────────────────────────────
+
+const TEXTBOOK_CHAR_Q = [
+  // 第8課 生字
+  { before:'妹妹有一（　）新的紅雨鞋。', zhuyin:'ㄕㄨㄤ', answer:'雙', options:['雙','霜','爽','窗'] },
+  { before:'她喜歡（　）上紅雨鞋走到院子裡。', zhuyin:'ㄔㄨㄢ', answer:'穿', options:['穿','串','川','船'] },
+  { before:'小雨滴一（　）下，水面就開了。', zhuyin:'ㄌㄨㄛˋ', answer:'落', options:['落','駱','絡','烙'] },
+  { before:'小雨滴就像一（　）（　）小珍珠。', zhuyin:'ㄎㄜ', answer:'顆', options:['顆','棵','科','課'] },
+  { before:'妹妹在院子裡和雨滴玩（　）戲。', zhuyin:'ㄧㄡˊ', answer:'遊', options:['遊','游','由','油'] },
+  { before:'雨天的院子，像一個大魚（　）。', zhuyin:'ㄍㄤ', answer:'缸', options:['缸','剛','崗','鋼'] },
+  // 第9課 生字
+  { before:'大樹很認（　）地刷亮葉子。', zhuyin:'ㄓㄣ', answer:'真', options:['真','針','珍','貞'] },
+  { before:'七（　）的虹好漂亮！', zhuyin:'ㄘㄞˇ', answer:'彩', options:['彩','採','猜','才'] },
+  { before:'太陽國王要大（　）除了。', zhuyin:'ㄙㄠˇ', answer:'掃', options:['掃','嫂','叟','搜'] },
+  { before:'馬路洗（　）了。', zhuyin:'ㄐㄧㄥˋ', answer:'淨', options:['淨','靜','勁','競'] },
+  // 第10課 生字
+  { before:'她拉著長長的（　）放風箏。', zhuyin:'ㄒㄧㄢˋ', answer:'線', options:['線','現','限','縣'] },
+  { before:'風箏（　）得好高！', zhuyin:'ㄕㄥ', answer:'升', options:['升','生','聲','勝'] },
+  { before:'好（　）奇喔，風箏飛得那麼高！', zhuyin:'ㄕㄣˊ', answer:'神', options:['神','身','申','伸'] },
+  // 第11課 生字
+  { before:'（　）你生日快樂！', zhuyin:'ㄓㄨˋ', answer:'祝', options:['祝','住','柱','注'] },
+  { before:'今天是我的生（　），朋友記得嗎？', zhuyin:'ㄖˋ', answer:'日', options:['日','耳','二','而'] },
+  { before:'謝謝你，我很（　）心！', zhuyin:'ㄎㄞ', answer:'開', options:['開','楷','凱','慨'] },
+  // 第12課 生字
+  { before:'我不太（　）楚，誰跑比較快。', zhuyin:'ㄑㄧㄥ', answer:'清', options:['清','青','情','請'] },
+  { before:'路（　）在我前面跑，好快！', zhuyin:'ㄉㄥ', answer:'燈', options:['燈','等','登','澄'] },
+  { before:'休（　）了一會兒，我們又跑了。', zhuyin:'ㄒㄧˊ', answer:'息', options:['息','悉','熄','惜'] },
+  { before:'我幫小黑（　）油，他好像笑了！', zhuyin:'ㄐㄧㄚ', answer:'加', options:['加','夾','家','假'] },
+  { before:'我們分不出（　）快誰慢。', zhuyin:'ㄕㄟˊ', answer:'誰', options:['誰','隨','雖','雜'] },
+];
+
+// ── 課文 ○× 判斷題 ────────────────────────────────────────
+
+const TEXTBOOK_TF_Q = [
+  { text:'妹妹的紅雨鞋是新的。', answer:true },
+  { text:'小雨滴就像一隻隻小金魚。', answer:false },
+  { text:'小雨滴一落下，水面就開出小水花。', answer:true },
+  { text:'妹妹喜歡下雨天在院子裡玩。', answer:true },
+  { text:'大魚缸裡有真的紅金魚。', answer:false },
+  { text:'太陽國王大掃除時，大樹幫忙刷亮葉子。', answer:true },
+  { text:'七彩的虹是太陽國王送給大家的。', answer:true },
+  { text:'放風箏的時候，要拉著一條長長的線。', answer:true },
+  { text:'風箏可以自己飛上天，不需要線。', answer:false },
+  { text:'「生日快樂」一共有四個字。', answer:true },
+  { text:'「祝」的注音是ㄓㄨˋ（第四聲）。', answer:true },
+  { text:'在「小黑」這篇課文裡，主角跑得比小黑快很多。', answer:false },
+  { text:'路燈對主角說：「休息一會兒吧！」', answer:true },
+  { text:'最後，主角和小黑分出了誰快誰慢。', answer:false },
+  { text:'主角幫小黑加油以後，小黑開心了。', answer:true },
+  { text:'「珍珠」的「珍」注音是ㄓㄣ。', answer:true },
+  { text:'「雙」可以用來計算一雙鞋子。', answer:true },
+  { text:'「缸」字裡有「氵」這個部件。', answer:false },
+  { text:'大掃除以後，馬路洗淨了。', answer:true },
+];
