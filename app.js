@@ -10,6 +10,16 @@ const WORDS = [
   '不太', '清楚', '停下來', '誰快', '誰慢', '分不出', '休息', '一會兒', '路燈', '吧', '加油',
 ];
 
+// 這份清單其實是5篇不同短文片段接在一起，排序題只能在同一段落內出題，不能跨段
+// [起點, 終點]（皆為 WORDS 的索引，閉區間）
+const SEGMENTS = [
+  [0, 22],   // 夢見自己變成黑天鵝、棉花糖、小珍珠、紅金魚...
+  [23, 36],  // 國王大掃除：洗淨馬路、刷亮樹葉、彩虹送人
+  [37, 47],  // 躺草地放風箏
+  [48, 62],  // 收到生日卡片
+  [63, 80],  // 跟路燈賽跑
+];
+
 // 高信心量詞配對（從題目原文可推得）
 const CLASSIFIERS = [
   { word: '雨鞋', answer: '雙' },
@@ -44,8 +54,10 @@ function pickRandom(arr, n) {
 }
 
 function genOrderQuestion() {
-  const len = Math.floor(Math.random() * 2) + 4; // 4-5 個詞
-  const start = Math.floor(Math.random() * (WORDS.length - len));
+  const [segStart, segEnd] = SEGMENTS[Math.floor(Math.random() * SEGMENTS.length)];
+  const segLen = segEnd - segStart + 1;
+  const len = Math.min(Math.floor(Math.random() * 2) + 4, segLen); // 4-5 個詞，不超過該段長度
+  const start = segStart + Math.floor(Math.random() * (segLen - len + 1));
   const correct = WORDS.slice(start, start + len);
   return { type: 'order', correct, shuffled: shuffle(correct) };
 }
@@ -72,9 +84,37 @@ function renderStart() {
     <div class="sub">每次題目都不一樣，加油！</div>
     <div class="card">
       <div class="btn primary" id="startBtn">開始練習 ▶️</div>
+      <div class="sub" id="adminLink" style="margin-top:14px; text-decoration:underline; cursor:pointer;">🔧 題庫總覽（家長／老師用）</div>
     </div>
   `;
   document.getElementById('startBtn').onclick = startQuiz;
+  document.getElementById('adminLink').onclick = renderAdmin;
+}
+
+function renderAdmin() {
+  const segmentsHtml = SEGMENTS.map((seg, i) => {
+    const text = WORDS.slice(seg[0], seg[1] + 1).join('、');
+    return `<div style="margin-bottom:10px;"><b>段落 ${i + 1}：</b>${text}</div>`;
+  }).join('');
+  const classifierHtml = CLASSIFIERS.map(c => `<div>一（${c.answer}）${c.word}</div>`).join('');
+  const redupHtml = `<div>${REDUP_WORDS.join('、')}</div>`;
+  app.innerHTML = `
+    <h1>🔧 題庫總覽</h1>
+    <div class="card">
+      <div class="question" style="font-size:18px; text-align:left;">📑 排序題段落（每題從同一段落內抽4-5個詞）</div>
+      <div style="font-size:16px; line-height:1.8; color:#444;">${segmentsHtml}</div>
+    </div>
+    <div class="card">
+      <div class="question" style="font-size:18px; text-align:left;">📏 量詞配對題</div>
+      <div style="font-size:16px; line-height:1.8; color:#444;">${classifierHtml}</div>
+    </div>
+    <div class="card">
+      <div class="question" style="font-size:18px; text-align:left;">🔁 疊字詞題（正確答案候選）</div>
+      <div style="font-size:16px; line-height:1.8; color:#444;">${redupHtml}</div>
+    </div>
+    <div class="btn primary" id="backBtn">⬅️ 返回</div>
+  `;
+  document.getElementById('backBtn').onclick = renderStart;
 }
 
 function startQuiz() {
