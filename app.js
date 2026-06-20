@@ -391,6 +391,17 @@ const app = document.getElementById('app');
 
 const LS_SCORES = 'cq_scores';
 const LS_WRONGS = 'cq_wrongs';
+const LS_ZY_SIZE = 'cq_zy_size';
+const ZY_SIZES = [
+  { label:'小', val:'0.28em' },
+  { label:'中', val:'0.38em' },
+  { label:'大', val:'0.48em' },
+  { label:'特大', val:'0.60em' },
+];
+function applyZySize(val) {
+  document.documentElement.style.setProperty('--zy-size', val);
+  localStorage.setItem(LS_ZY_SIZE, val);
+}
 function lsGet(k) { try { return JSON.parse(localStorage.getItem(k)||'[]'); } catch { return []; } }
 function lsSet(k,v) { try { localStorage.setItem(k,JSON.stringify(v)); } catch {} }
 
@@ -443,6 +454,10 @@ function renderStart() {
     </div>` : ''}
 
     <div class="card">
+      <div class="section-title">注音大小</div>
+      <div class="zy-size-row">
+        ${ZY_SIZES.map(s => `<button class="zy-size-btn${(localStorage.getItem(LS_ZY_SIZE)||'0.38em')===s.val?' active':''}" data-val="${s.val}">${s.label}</button>`).join('')}
+      </div>
       <div class="section-title">選擇題數</div>
       <div class="count-btns">
         <button class="count-btn" data-n="10">10題</button>
@@ -486,6 +501,11 @@ function renderStart() {
   const clearBtn = document.getElementById('clearWrong');
   if (clearBtn) clearBtn.onclick = () => { clearWrongs(); renderStart(); };
   document.getElementById('adminLink').onclick = renderAdmin;
+  const curSize = localStorage.getItem(LS_ZY_SIZE) || '0.38em';
+  document.querySelectorAll('.zy-size-btn').forEach(btn => {
+    if (btn.dataset.val === curSize) btn.classList.add('active');
+    btn.onclick = () => { applyZySize(btn.dataset.val); renderStart(); };
+  });
 }
 
 // 重測錯題
@@ -805,4 +825,5 @@ function renderAdmin() {
   }
 })();
 
+applyZySize(localStorage.getItem(LS_ZY_SIZE) || '0.38em');
 renderStart();
