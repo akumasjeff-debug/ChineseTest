@@ -1,4 +1,5 @@
 // 國語小練習 v2.0 — 仿考卷 8 種題型，純 HTML/JS
+const VERSION = '20260620 0828';
 
 // =====================================================================
 // ZHUYIN TABLE — 一至三年級常見字
@@ -282,6 +283,16 @@ function withRuby(text) {
   }).join('');
 }
 
+// 題目注音標注；hideChars（Set）內的字只顯示字，不顯示注音
+function annotate(text, hideChars = new Set()) {
+  return Array.from(text).map(ch => {
+    const zy = ZHUYIN[ch];
+    if (!zy) return ch;
+    if (hideChars.has(ch)) return ch;
+    return `<ruby>${ch}<rt>${zy}</rt></ruby>`;
+  }).join('');
+}
+
 // =====================================================================
 // 產生題目
 // =====================================================================
@@ -425,6 +436,7 @@ function renderStart() {
   app.innerHTML = `
     <h1>📚 國語小練習</h1>
     <div class="sub">仿考卷題型 · 每次不一樣</div>
+    <div class="version-tag">v${VERSION}</div>
 
     <div class="card">
       <div class="section-title">選擇題數</div>
@@ -526,7 +538,7 @@ function renderZhuyinQ(hdr, q) {
     ${hdr}
     <div class="card">
       ${typeTag('寫注音')}
-      <div class="question">「<span class="big-char">${q.char}</span>」的正確注音是？</div>
+      <div class="question">「<span class="big-char">${q.char}</span>」${annotate('的正確注音是？')}</div>
       <div id="choices"></div>
       <div class="feedback" id="fb"></div>
     </div>
@@ -537,13 +549,14 @@ function renderZhuyinQ(hdr, q) {
 
 // --- 看注音選字：給注音+句子，選字 ---
 function renderCharFillQ(hdr, q) {
+  const hide = new Set([...q.answer]);
   app.innerHTML = `
     ${hdr}
     <div class="card">
       ${typeTag('看注音選字')}
-      <div class="question">${q.before}</div>
+      <div class="question">${annotate(q.before, hide)}</div>
       <div class="zy-hint">${zyVertical(q.zhuyin)}</div>
-      <div class="q-sub">這個空格應填哪個字？</div>
+      <div class="q-sub">${annotate('這個空格應填哪個字？', hide)}</div>
       <div id="choices"></div>
       <div class="feedback" id="fb"></div>
     </div>
@@ -553,11 +566,12 @@ function renderCharFillQ(hdr, q) {
 
 // --- 量詞題 ---
 function renderClassifierQ(hdr, q) {
+  const hide = new Set([...q.answer]);
   app.innerHTML = `
     ${hdr}
     <div class="card">
       ${typeTag('量詞')}
-      <div class="question">一（　）${q.word}<br>該填哪個量詞？</div>
+      <div class="question">${annotate(`一（　）${q.word}`, hide)}<br>${annotate('該填哪個量詞？', hide)}</div>
       <div id="choices"></div>
       <div class="feedback" id="fb"></div>
     </div>
@@ -571,7 +585,7 @@ function renderRedupQ(hdr, q) {
     ${hdr}
     <div class="card">
       ${typeTag('疊字詞')}
-      <div class="question">哪一個詞有<br>「重複的字」？</div>
+      <div class="question">${annotate('哪一個詞有')}<br>「${annotate('重複的字')}」？</div>
       <div id="choices"></div>
       <div class="feedback" id="fb"></div>
     </div>
@@ -581,11 +595,12 @@ function renderRedupQ(hdr, q) {
 
 // --- 填空題 ---
 function renderFillBlankQ(hdr, q) {
+  const hide = new Set([...q.answer]);
   app.innerHTML = `
     ${hdr}
     <div class="card">
       ${typeTag('填空')}
-      <div class="question">${q.sent}</div>
+      <div class="question">${annotate(q.sent, hide)}</div>
       <div id="choices"></div>
       <div class="feedback" id="fb"></div>
     </div>
@@ -595,14 +610,23 @@ function renderFillBlankQ(hdr, q) {
 
 // --- 改錯字題 ---
 function renderWrongCharQ(hdr, q) {
-  const highlighted = q.text.replace(`【${q.wrongChar}】`,
-    `<span class="err-char">【${q.wrongChar}】</span>`);
+  const hide = new Set([q.answer]);
+  const marker = `【${q.wrongChar}】`;
+  const idx = q.text.indexOf(marker);
+  const wrongZy = ZHUYIN[q.wrongChar];
+  const wrongHtml = wrongZy
+    ? `<ruby>${q.wrongChar}<rt>${wrongZy}</rt></ruby>`
+    : q.wrongChar;
+  const highlighted =
+    annotate(q.text.slice(0, idx), hide) +
+    `<span class="err-char">【${wrongHtml}】</span>` +
+    annotate(q.text.slice(idx + marker.length), hide);
   app.innerHTML = `
     ${hdr}
     <div class="card">
       ${typeTag('改錯字')}
       <div class="question">${highlighted}</div>
-      <div class="q-sub">紅色那個字寫錯了，正確應該是？</div>
+      <div class="q-sub">${annotate('紅色那個字寫錯了，正確應該是？', hide)}</div>
       <div id="choices"></div>
       <div class="feedback" id="fb"></div>
     </div>
@@ -612,11 +636,12 @@ function renderWrongCharQ(hdr, q) {
 
 // --- 部首題：4字選不同部件的那個 ---
 function renderRadicalQ(hdr, q) {
+  const hide = new Set([q.answer]);
   app.innerHTML = `
     ${hdr}
     <div class="card">
       ${typeTag('部首部件')}
-      <div class="question">以下四個字，哪一個<strong>沒有</strong>「${q.radical}」（${q.label}）？</div>
+      <div class="question">${annotate('以下四個字，哪一個', hide)}<strong>${annotate('沒有', hide)}</strong>「${q.radical}」（${annotate(q.label, hide)}）？</div>
       <div id="choices"></div>
       <div class="feedback" id="fb"></div>
     </div>
@@ -630,7 +655,7 @@ function renderTrueFalseQ(hdr, q) {
     ${hdr}
     <div class="card">
       ${typeTag('○ × 判斷')}
-      <div class="question">${q.text}</div>
+      <div class="question">${annotate(q.text)}</div>
       <div class="tf-row" id="choices">
         <button class="tf-btn tf-o" data-val="true">○</button>
         <button class="tf-btn tf-x" data-val="false">✕</button>
@@ -662,7 +687,7 @@ function renderChoices(options, answer, displayFn) {
   options.forEach(opt => {
     const el = document.createElement('div');
     el.className = 'choice';
-    el.innerHTML = displayFn ? displayFn(opt) : opt;
+    el.innerHTML = displayFn ? displayFn(opt) : annotate(opt);
     el.dataset.val = opt;
     el.onclick = () => {
       if (locked) return;
@@ -674,7 +699,7 @@ function renderChoices(options, answer, displayFn) {
           if (c.dataset.val === answer) c.classList.add('correct');
         });
       }
-      showFeedback(ok, displayFn ? displayFn(answer) : answer);
+      showFeedback(ok, displayFn ? displayFn(answer) : annotate(answer));
     };
     box.appendChild(el);
   });
