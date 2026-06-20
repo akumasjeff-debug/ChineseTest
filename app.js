@@ -283,13 +283,25 @@ function withRuby(text) {
   }).join('');
 }
 
+// 兒童書格式注音：字右側直排，聲調在最後符號右下
+function inlineZy(zy) {
+  const { syms, tone } = parseZy(zy);
+  if (!syms.length) return '';
+  const rows = syms.map((s, i) => {
+    const isLast = i === syms.length - 1;
+    const t = (isLast && tone) ? `<span class="ann-tone">${tone}</span>` : '';
+    return `<div class="ann-row">${s}${t}</div>`;
+  });
+  return `<div class="ann-zy">${rows.join('')}</div>`;
+}
+
 // 題目注音標注；hideChars（Set）內的字只顯示字，不顯示注音
 function annotate(text, hideChars = new Set()) {
   return Array.from(text).map(ch => {
     const zy = ZHUYIN[ch];
     if (!zy) return ch;
     if (hideChars.has(ch)) return ch;
-    return `<ruby>${ch}<rt>${zy}</rt></ruby>`;
+    return `<span class="char-unit">${ch}${inlineZy(zy)}</span>`;
   }).join('');
 }
 
@@ -512,8 +524,13 @@ function startRetry() {
 function renderQuestion() {
   const q = state.questions[state.index];
   const hdr = `
-    <div class="progress">第 ${state.index+1} 題 / 共 ${state.questions.length} 題</div>
-    <div class="score">得分：${state.score}</div>
+    <div class="quiz-hdr">
+      <div>
+        <div class="progress">第 ${state.index+1} 題 / 共 ${state.questions.length} 題</div>
+        <div class="score">得分：${state.score}</div>
+      </div>
+      <button class="exit-btn" id="exitBtn">✕ 離開</button>
+    </div>
   `;
   const dispatch = {
     zhuyin: renderZhuyinQ,
@@ -526,6 +543,7 @@ function renderQuestion() {
     true_false: renderTrueFalseQ,
   };
   (dispatch[q.type] || renderFillBlankQ)(hdr, q);
+  document.getElementById('exitBtn').onclick = renderStart;
 }
 
 function typeTag(label) {
