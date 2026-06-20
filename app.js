@@ -1,5 +1,5 @@
 // 國語小練習 v2.0 — 仿考卷 8 種題型，純 HTML/JS
-const VERSION = '20260620 0941';
+const VERSION = '20260620 1100';
 
 // =====================================================================
 // ZHUYIN TABLE — 一至三年級常見字
@@ -192,21 +192,21 @@ const TRUE_FALSE_Q = [
 // 量詞題
 // =====================================================================
 const CLASSIFIERS = [
-  { word:'雨鞋', answer:'雙', options:['雙','隻','條','個'] },
-  { word:'珍珠', answer:'顆', options:['顆','粒','個','片'] },
-  { word:'生日卡片', answer:'張', options:['張','本','份','冊'] },
-  { word:'黑天鵝', answer:'隻', options:['隻','匹','頭','條'] },
-  { word:'魚', answer:'條', options:['條','隻','匹','頭'] },
-  { word:'書', answer:'本', options:['本','張','冊','份'] },
-  { word:'花', answer:'朵', options:['朵','株','棵','片'] },
-  { word:'樹', answer:'棵', options:['棵','朵','株','根'] },
-  { word:'紙', answer:'張', options:['張','本','頁','冊'] },
-  { word:'衣服', answer:'件', options:['件','條','雙','套'] },
-  { word:'褲子', answer:'條', options:['條','件','雙','套'] },
-  { word:'牛', answer:'頭', options:['頭','隻','條','匹'] },
-  { word:'馬', answer:'匹', options:['匹','頭','隻','條'] },
-  { word:'蛋糕', answer:'個', options:['個','塊','片','顆'] },
-  { word:'風箏', answer:'個', options:['個','隻','條','支'] },
+  { word:'雨鞋', answer:'雙', options:['雙','根','張','顆'] },
+  { word:'珍珠', answer:'顆', options:['顆','把','張','片'] },
+  { word:'生日卡片', answer:'張', options:['張','本','份','顆'] },
+  { word:'黑天鵝', answer:'隻', options:['隻','匹','張','條'] },
+  { word:'魚', answer:'條', options:['條','把','匹','顆'] },
+  { word:'書', answer:'本', options:['本','張','片','顆'] },
+  { word:'花', answer:'朵', options:['朵','根','條','片'] },
+  { word:'樹', answer:'棵', options:['棵','朵','根','條'] },
+  { word:'紙', answer:'張', options:['張','本','顆','把'] },
+  { word:'衣服', answer:'件', options:['件','條','雙','片'] },
+  { word:'褲子', answer:'條', options:['條','朵','雙','片'] },
+  { word:'牛', answer:'頭', options:['頭','把','張','匹'] },
+  { word:'馬', answer:'匹', options:['匹','朵','張','顆'] },
+  { word:'蛋糕', answer:'個', options:['個','根','顆','把'] },
+  { word:'風箏', answer:'個', options:['個','朵','根','把'] },
 ];
 
 // =====================================================================
@@ -402,6 +402,11 @@ function applyZySize(val) {
   document.documentElement.style.setProperty('--zy-size', val);
   localStorage.setItem(LS_ZY_SIZE, val);
 }
+function adjustZySize(dir) {
+  const cur = localStorage.getItem(LS_ZY_SIZE) || '0.38em';
+  const idx = ZY_SIZES.findIndex(s => s.val === cur);
+  applyZySize(ZY_SIZES[Math.max(0, Math.min(ZY_SIZES.length - 1, idx + dir))].val);
+}
 function lsGet(k) { try { return JSON.parse(localStorage.getItem(k)||'[]'); } catch { return []; } }
 function lsSet(k,v) { try { localStorage.setItem(k,JSON.stringify(v)); } catch {} }
 
@@ -454,10 +459,6 @@ function renderStart() {
     </div>` : ''}
 
     <div class="card">
-      <div class="section-title">注音大小</div>
-      <div class="zy-size-row">
-        ${ZY_SIZES.map(s => `<button class="zy-size-btn${(localStorage.getItem(LS_ZY_SIZE)||'0.38em')===s.val?' active':''}" data-val="${s.val}">${s.label}</button>`).join('')}
-      </div>
       <div class="section-title">選擇題數</div>
       <div class="count-btns">
         <button class="count-btn" data-n="10">10題</button>
@@ -501,11 +502,6 @@ function renderStart() {
   const clearBtn = document.getElementById('clearWrong');
   if (clearBtn) clearBtn.onclick = () => { clearWrongs(); renderStart(); };
   document.getElementById('adminLink').onclick = renderAdmin;
-  const curSize = localStorage.getItem(LS_ZY_SIZE) || '0.38em';
-  document.querySelectorAll('.zy-size-btn').forEach(btn => {
-    if (btn.dataset.val === curSize) btn.classList.add('active');
-    btn.onclick = () => { applyZySize(btn.dataset.val); renderStart(); };
-  });
 }
 
 // 重測錯題
@@ -529,7 +525,11 @@ function renderQuestion() {
         <div class="progress">第 ${state.index+1} 題 / 共 ${state.questions.length} 題</div>
         <div class="score">得分：${state.score}</div>
       </div>
-      <button class="exit-btn" id="exitBtn">✕ 離開</button>
+      <div class="quiz-hdr-right">
+        <button class="zy-adj-btn" id="zyMinus">ㄅ-</button>
+        <button class="zy-adj-btn" id="zyPlus">ㄅ+</button>
+        <button class="exit-btn" id="exitBtn">✕ 離開</button>
+      </div>
     </div>
     <div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div>
   `;
@@ -545,6 +545,8 @@ function renderQuestion() {
   };
   (dispatch[q.type] || renderFillBlankQ)(hdr, q);
   document.getElementById('exitBtn').onclick = renderStart;
+  document.getElementById('zyMinus').onclick = () => adjustZySize(-1);
+  document.getElementById('zyPlus').onclick = () => adjustZySize(1);
 }
 
 function typeTag(label) {
