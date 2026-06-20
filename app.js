@@ -687,7 +687,7 @@ function renderChoices(options, answer, displayFn) {
   options.forEach(opt => {
     const el = document.createElement('div');
     el.className = 'choice';
-    el.innerHTML = displayFn ? displayFn(opt) : annotate(opt);
+    el.innerHTML = displayFn ? displayFn(opt) : opt;
     el.dataset.val = opt;
     el.onclick = () => {
       if (locked) return;
@@ -699,7 +699,7 @@ function renderChoices(options, answer, displayFn) {
           if (c.dataset.val === answer) c.classList.add('correct');
         });
       }
-      showFeedback(ok, displayFn ? displayFn(answer) : annotate(answer));
+      showFeedback(ok, displayFn ? displayFn(answer) : answer);
     };
     box.appendChild(el);
   });
